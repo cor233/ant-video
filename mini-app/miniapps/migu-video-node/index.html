@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>咪咕直播</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-0: #060d18;
+      --bg-1: #0c1b2e;
+      --card: rgba(15, 30, 48, 0.72);
+      --card-hi: rgba(28, 52, 80, 0.9);
+      --line: rgba(88, 132, 178, 0.22);
+      --line-hi: #4fc3ff;
+      --text: #eaf2ff;
+      --text-dim: #9db4d0;
+      --accent: #38e0a6;
+      --accent-2: #4fc3ff;
+      --danger: #ff8a8a;
+      font-family: -apple-system, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 82% -8%, #16406b40, transparent 60%),
+        radial-gradient(900px 600px at 5% 8%, #1c8a6b30, transparent 55%),
+        linear-gradient(158deg, var(--bg-0), var(--bg-1) 62%, #08131f);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---------- 顶栏 ---------- */
+    header {
+      padding: calc(16px + env(safe-area-inset-top)) 20px 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(92deg, #fff, #bfe6ff 55%, #7ff0c8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand .dot { color: var(--accent); -webkit-text-fill-color: var(--accent); }
+    .sub { font-size: 12px; color: var(--text-dim); }
+    .sub b { color: var(--accent-2); font-weight: 600; }
+
+    /* ---------- 分类 tab ---------- */
+    .tabs-wrap {
+      position: relative;
+      padding: 4px 0 8px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px 20px 10px;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 0 0 auto;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .18s, border-color .18s, background .18s, transform .12s;
+    }
+    .tab.active {
+      color: #062018;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      border-color: transparent;
+    }
+    .tab:focus-visible, .tab.kb-focus { outline: none; border-color: var(--line-hi); box-shadow: 0 0 0 2px var(--line-hi); }
+    .tab:active { transform: scale(0.96); }
+
+    /* ---------- 频道网格 ---------- */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 6px 16px calc(20px + env(safe-area-inset-bottom));
+      -webkit-overflow-scrolling: touch;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      padding: 14px 12px 12px;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: transform .14s, border-color .16s, background .16s, box-shadow .16s;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 40%, rgba(79, 195, 255, 0.08));
+      opacity: 0;
+      transition: opacity .18s;
+    }
+    .card:hover, .card.kb-focus {
+      transform: translateY(-3px);
+      border-color: var(--line-hi);
+      background: var(--card-hi);
+      box-shadow: 0 10px 30px -14px rgba(79, 195, 255, 0.6);
+    }
+    .card:hover::after, .card.kb-focus::after { opacity: 1; }
+    .card:active { transform: scale(0.97); }
+    .card.kb-focus { outline: none; box-shadow: 0 0 0 2px var(--line-hi), 0 12px 30px -14px rgba(79, 195, 255, 0.6); }
+
+    .logo-box {
+      width: 76px;
+      height: 76px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 30%, #ffffff14, #ffffff05);
+      overflow: hidden;
+    }
+    .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-fallback {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-2);
+    }
+    .card .name {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.35;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.7em;
+    }
+    .live-badge {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--danger);
+      background: rgba(255, 90, 90, 0.14);
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+    .live-badge i {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--danger);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ---------- 骨架 / 状态 ---------- */
+    .skel {
+      border-radius: 14px;
+      height: 158px;
+      background: linear-gradient(100deg, #ffffff06 30%, #ffffff14 50%, #ffffff06 70%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+    }
+    @keyframes shimmer { from{background-position:200% 0} to{background-position:-200% 0} }
+
+    .state {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-dim);
+    }
+    .state .icon { font-size: 40px; margin-bottom: 12px; }
+    .state h3 { margin: 0 0 6px; font-size: 16px; color: var(--text); font-weight: 600; }
+    .state p { margin: 0 0 18px; font-size: 13px; line-height: 1.6; }
+    .btn {
+      display: inline-block;
+      padding: 9px 22px;
+      border-radius: 999px;
+      border: 1px solid var(--line-hi);
+      background: rgba(79, 195, 255, 0.12);
+      color: var(--accent-2);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:focus-visible, .btn.kb-focus { outline: none; box-shadow: 0 0 0 2px var(--line-hi); }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">咪咕<span class="dot">·</span>直播</span>
+    <span class="sub" id="sub">游客高清模式</span>
+  </header>
+
+  <div class="tabs-wrap">
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <main id="main">
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <!-- 浏览器里 mock；真机会自动退让。真机上 ant.request 不受 CORS 限制 -->
+  <script>
+    window.__antMockPermissions = ['network', 'player', 'ui', 'storage', 'node'];
+  </script>
+  <script src="./ant-mock.js"></script>
+  <script src="./migu.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

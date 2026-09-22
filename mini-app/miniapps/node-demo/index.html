@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Node 服务示例</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 16px;
+      color: #333;
+      background: #fff;
+      line-height: 1.7;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Node 服务示例</h1>
+  <p>这个页面只是占位——本小程序的主要价值在包内的 <code>server/</code> 目录：
+    宿主会用内嵌 node 把它作为独立 worker 跑起来。</p>
+
+  <div class="card">
+    <b>验证方法</b>
+    <ol>
+      <li>在小程序详情页点「启动」，状态会显示 <code>运行中 · 端口 NNNN</code></li>
+      <li>浏览器或 curl 访问 <code>127.0.0.1:NNNN/hello</code>（curl 默认走 http）</li>
+      <li>或者在任何认 <code>miniapp://</code> 地址的设置里填
+        <code>miniapp://com.leospring.node_demo/api/time</code>，
+        宿主会自动拉起本服务再转发请求</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <b>服务端接口</b>
+    <ul>
+      <li><code>GET /check</code> — 就绪探测（宿主启动时轮询的就是它）</li>
+      <li><code>GET /hello</code> — 返回 index.config.js 里配置的问候语与进程 pid</li>
+      <li><code>GET /api/time</code> — 返回当前时间与 node 版本</li>
+    </ul>
+  </div>
+</body>
+</html>

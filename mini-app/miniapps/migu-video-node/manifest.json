@@ -1,0 +1,14 @@
+{
+  "appId": "com.leospring.migu_video.node",
+  "name": "咪咕直播源 (Node)",
+  "version": "1.1.0",
+  "versionCode": 6,
+  "renderer": "webview",
+  "entry": "index.html",
+  "permissions": ["node", "ui", "network", "player", "storage"],
+  "description": "咪咕直播：内置精美直播频道 UI，点击即播；同时作为宿主内嵌 Node 服务提供 M3U、TXT、EPG 取流接口。",
+  "node": {
+    "entry": "server/index.js",
+    "config": "server/index.config.js"
+  }
+}

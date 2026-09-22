@@ -1,0 +1,14 @@
+{
+  "appId": "com.logvar.danmu.node",
+  "name": "LogVar 弹幕服务 (Node)",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "renderer": "webview",
+  "entry": "index.html",
+  "description": "探针版：把 danmu_api 作为真正的 Node 服务跑在宿主内嵌 node 里（worker_threads），不再在 WebView 里 polyfill。基于 huangxd-/danmu_api（AGPL-3.0）。",
+  "permissions": ["node", "ui"],
+  "node": {
+    "entry": "server/index.js",
+    "config": "server/index.config.js"
+  }
+}

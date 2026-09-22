@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LogVar 弹幕服务 (Node)</title>
+  <style>
+    :root { color-scheme: dark light; }
+    body {
+      margin: 0;
+      padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+      background: #101216;
+      color: #e8eaed;
+      font: 15px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .sub { color: #8b93a1; font-size: 13px; margin-bottom: 20px; }
+    .card {
+      background: #181b21;
+      border: 1px solid #252932;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .card h2 { font-size: 14px; margin: 0 0 8px; color: #cfd4dc; }
+    p { margin: 0 0 8px; }
+    p:last-child { margin-bottom: 0; }
+    code {
+      background: #22262e;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      color: #9ecbff;
+      overflow-wrap: anywhere;
+    }
+    ol { margin: 0; padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    .addr-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .addr-item:last-child { margin-bottom: 0; }
+    .addr-item .addr-main { flex: 1; min-width: 0; }
+    .addr-label { color: #8b93a1; font-size: 12px; margin-bottom: 2px; }
+    .addr-item code {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #22262e;
+      border: 1px solid #2c3340;
+      border-radius: 6px;
+    }
+    .copy-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #9ecbff;
+      background: #1c2733;
+      border: 1px solid #2c4b67;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .copy-btn:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>LogVar 弹幕服务 · Node 版</h1>
+    <div class="sub">弹幕服务本体跑在宿主内嵌 Node 里，本页提供对外引用地址</div>
+
+    <div class="card">
+      <h2>对外地址</h2>
+      <div class="addr-item">
+        <div class="addr-main">
+          <div class="addr-label">主地址 —— 弹弹play 兼容播放器的弹幕 API 填这个</div>
+          <code id="base">miniapp://com.logvar.danmu.node</code>
+        </div>
+        <button class="copy-btn" data-copy="base">复制</button>
+      </div>
+      <div class="addr-item">
+        <div class="addr-main">
+          <div class="addr-label">Fongmi / 影视</div>
+          <code id="fongmi">miniapp://com.logvar.danmu.node/api/v2/fongmi/danmaku</code>
+        </div>
+        <button class="copy-btn" data-copy="fongmi">复制</button>
+      </div>
+      <div class="addr-item">
+        <div class="addr-main">
+          <div class="addr-label">匹配接口（调试用）</div>
+          <code id="match">miniapp://com.logvar.danmu.node/api/v2/match</code>
+        </div>
+        <button class="copy-btn" data-copy="match">复制</button>
+      </div>
+      <div class="addr-item">
+        <div class="addr-main">
+          <div class="addr-label">弹幕获取（调试用，需拼 episodeId）</div>
+          <code id="comment">miniapp://com.logvar.danmu.node/api/v2/comment</code>
+        </div>
+        <button class="copy-btn" data-copy="comment">复制</button>
+      </div>
+      <div class="addr-item">
+        <div class="addr-main">
+          <div class="addr-label">搜索剧集（调试用）</div>
+          <code id="episodes">miniapp://com.logvar.danmu.node/api/v2/search/episodes</code>
+        </div>
+        <button class="copy-btn" data-copy="episodes">复制</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>怎么用</h2>
+      <ol>
+        <li>播放器 → 弹幕设置 → 弹幕 API 填 <code>miniapp://com.logvar.danmu.node</code>，或直接复制上面的主地址</li>
+        <li>播放时会自动把服务拉起来，不需要手动打开这个页面</li>
+        <li>要手动看状态：小程序详情页 → 「Node 服务」区块</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>这个包在做什么</h2>
+      <p>弹幕服务本体跑在宿主的内嵌 node 里（worker_threads），不在本页面里。
+        配置写在包内的 <code>server/index.config.js</code>。</p>
+    </div>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

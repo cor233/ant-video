@@ -1,0 +1,14 @@
+{
+  "appId": "com.leospring.drpy_node",
+  "name": "drpy-node 影视源 (Node)",
+  "version": "1.1.0",
+  "versionCode": 3,
+  "renderer": "webview",
+  "entry": "index.html",
+  "permissions": ["node", "ui"],
+  "description": "将 drpy-node/drpyS 作为宿主内嵌 Node 服务运行，提供影视源聚合、规则执行和解析接口。",
+  "node": {
+    "entry": "server/index.js",
+    "config": "server/index.config.js"
+  }
+}

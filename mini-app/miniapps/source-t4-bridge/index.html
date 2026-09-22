@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>采集源转 T4 服务</title>
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    window.__antMockPermissions = ['ui', 'storage', 'service', 'source'];
+    window.__antMockAppId = 'com.leospring.source_t4_bridge';
+    // 浏览器里用假采集源把整条链路跑通；真机上这些数据全部来自宿主。
+    window.__antMockFixtures = {
+      sites: [
+        { key: 'mock_cms', name: '示例 CMS 源', type: 1, searchable: 1 },
+        { key: 'mock_spider', name: '示例爬虫源', type: 3, searchable: 1 }
+      ],
+      home: {
+        classes: [
+          { type_id: '1', type_name: '电影' },
+          { type_id: '2', type_name: '剧集' }
+        ],
+        filters: {},
+        list: [
+          { vod_id: '10', vod_name: '示例推荐影片', vod_pic: '', vod_remarks: '更新至 08 集' }
+        ]
+      },
+      category: {
+        page: 1,
+        pagecount: 3,
+        list: [
+          {
+            vod_id: '11', vod_name: '示例分类影片', vod_pic: '', vod_remarks: 'HD',
+            vod_play_from: ['线路1'],
+            vod_play_url: ['第1集$http://example.com/1.m3u8']
+          }
+        ]
+      },
+      search: {
+        list: [
+          { vod_id: '12', vod_name: '示例搜索结果', vod_pic: '', vod_remarks: '完结' }
+        ]
+      },
+      detail: {
+        list: [
+          {
+            vod_id: '11', vod_name: '示例分类影片', vod_pic: '', vod_remarks: 'HD',
+            vod_play_from: ['线路1'],
+            vod_play_url: ['第1集$abc123#第2集$def456']
+          }
+        ]
+      },
+      play: {
+        parse: 0, jx: 0, flag: '线路1',
+        url: 'http://example.com/video.m3u8',
+        header: { 'User-Agent': 'okhttp/3.15.0' }
+      }
+    };
+  </script>
+  <script src="ant-mock.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="eyebrow">SERVICE BRIDGE</span>
+      <h1>采集源转 T4 服务</h1>
+      <p>复用宿主里已经配置的采集源，在后台提供按站点区分的 T4 兼容首页、分类、搜索、详情与播放服务；爬虫源的解析由宿主完成。</p>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>宿主采集源</h2>
+        <button data-focus id="refresh">刷新列表</button>
+      </div>
+      <p class="hint">站点列表来自宿主影视模块的采集源配置，key 与宿主保持一致；这里不能增删，去宿主里改。</p>
+      <p id="status" class="status">正在读取宿主采集源…</p>
+      <div id="site-list" class="site-list"></div>
+    </section>
+
+    <section class="panel export">
+      <div class="panel-head">
+        <h2>对外接口</h2>
+        <div class="tabs">
+          <button data-focus class="tab is-active" data-scope="internal">宿主内部</button>
+          <button data-focus class="tab" data-scope="lan">局域网</button>
+        </div>
+      </div>
+
+      <div class="hero-link">
+        <div class="hero-link-text">
+          <span>config 配置接口</span>
+          <code id="config-url">尚未配置</code>
+        </div>
+        <button data-focus class="primary" id="copy-config-url">复制</button>
+      </div>
+      <p id="scope-hint" class="hint"></p>
+
+      <div id="lan-form" class="lan-form" hidden>
+        <label>
+          <span>局域网共享地址</span>
+          <input id="lan-base" type="url" inputmode="url" placeholder="http://192.168.1.7:9321/lanToken" autocomplete="off" />
+        </label>
+        <div class="actions">
+          <button data-focus class="primary" id="lan-save">保存地址</button>
+          <button data-focus class="quiet" id="lan-clear">清除</button>
+        </div>
+        <p class="hint">宿主里打开「小程序设置 → 局域网共享」（或本小程序详情页）会显示 <code>http://IP:9321/…</code>，整段粘到这里即可。地址里的 token 就是唯一凭证，别在公共网络外传。</p>
+      </div>
+
+      <div id="link-list" class="link-list"></div>
+      <p id="export-status" class="status"></p>
+
+      <div class="sub-head">
+        <h3>配置 JSON</h3>
+        <button data-focus class="copy" id="copy">复制 JSON</button>
+      </div>
+      <pre id="config-output">尚未配置</pre>
+    </section>
+
+    <section class="panel endpoints">
+      <h2>接口路径</h2>
+      <p class="hint">下面是业务路径，前面接上当前地址前缀 <code id="prefix-sample">miniapp://com.leospring.source_t4_bridge</code>；站点既能写成 <code>/site/mock_cms</code>，也能写成 <code>?site=mock_cms</code>。key 就是宿主采集源的 key。</p>
+      <div class="endpoint"><code>GET /site/站点key?filter=true</code><span>首页与分类（宿主 classes → T4 class）</span></div>
+      <div class="endpoint"><code>GET /site/站点key?t=分类ID&amp;ac=videolist&amp;pg=1</code><span>分类列表，T4 的 <code>ext</code> 原样传给宿主</span></div>
+      <div class="endpoint"><code>GET /site/站点key?wd=关键词&amp;pg=1</code><span>搜索</span></div>
+      <div class="endpoint"><code>GET /site/站点key?ac=detail&amp;ids=影片ID</code><span>详情，多个 ID 用逗号分隔</span></div>
+      <div class="endpoint"><code>GET /site/站点key?flag=线路&amp;play=集地址</code><span>播放，爬虫源由宿主解析后返回直链</span></div>
+      <div class="endpoint"><code>GET /?ac=videolist&amp;t=1</code><span>省略站点，走默认站点</span></div>
+      <div class="endpoint"><code>GET /config</code><span>多站点配置，可用 <code>?base=</code> 指定返回的前缀</span></div>
+      <div class="endpoint"><code>GET /health</code><span>服务状态与站点数量</span></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

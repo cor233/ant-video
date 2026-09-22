@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>drpy-node 服务</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: calc(28px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom)); color: #eef4ff; background: linear-gradient(150deg, #08121f, #192b4b 58%, #101827); }
+    main { width: min(820px, 100%); margin: 0 auto; }
+    h1 { margin: 12px 0 10px; font-size: 30px; }
+    p { color: #bdcbe0; line-height: 1.7; }
+    section { margin-top: 22px; padding: 18px; border: 1px solid #344b70; border-radius: 16px; background: #0d1b2dcc; }
+    h2 { margin: 0 0 8px; font-size: 19px; }
+    code { color: #7cddff; overflow-wrap: anywhere; }
+    .tag { display: inline-block; padding: 5px 10px; border-radius: 99px; color: #9ce7c0; background: #12392b; }
+    .endpoint { margin-top: 14px; padding: 15px; border-radius: 13px; background: #07131f; border: 1px solid #263c59; }
+    .endpoint.primary { border-color: #2585a8; box-shadow: 0 0 0 1px #2585a833 inset; }
+    .endpoint-label { color: #8ea5bf; font-size: 13px; }
+    .endpoint-value { display: block; margin-top: 8px; padding: 11px; color: #80e3ff; background: #030a11; border-radius: 9px; font-size: 14px; line-height: 1.55; user-select: text; }
+    .actions { display: flex; gap: 10px; margin-top: 12px; }
+    button { min-height: 42px; padding: 0 17px; color: #06121c; background: #78dcff; border: 0; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    button:focus { outline: 3px solid #fff; outline-offset: 3px; }
+    .hint { margin: 10px 0 0; color: #8fa5bc; font-size: 13px; }
+    .warning { color: #ffd38a; }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="tag">Node 服务型小程序</span>
+    <h1>drpy-node / drpyS</h1>
+    <p>服务由宿主按需启动。下面两个地址是对外使用的主要接口，可直接复制到宿主的影视源或猫源配置中。</p>
+    <section>
+      <h2>通用影视接口</h2>
+      <p class="hint">返回完整影视站点配置，适合影视源/T4 配置入口。</p>
+      <div class="endpoint primary">
+        <span class="endpoint-label">宿主内部逻辑地址</span>
+        <code class="endpoint-value" id="video-endpoint">miniapp://com.leospring.drpy_node/config/1?healthy=1</code>
+        <div class="actions"><button type="button" data-copy="video-endpoint">复制通用影视接口</button></div>
+      </div>
+    </section>
+    <section>
+      <h2>猫源接口</h2>
+      <p class="hint">用于 CatPaw/猫影视兼容客户端的在线 DS 猫源入口。</p>
+      <div class="endpoint primary">
+        <span class="endpoint-label">宿主内部逻辑地址</span>
+        <code class="endpoint-value" id="cat-endpoint">miniapp://com.leospring.drpy_node/config/index.js.md5</code>
+        <div class="actions"><button type="button" data-copy="cat-endpoint">复制猫源接口</button></div>
+      </div>
+    </section>
+    <section>
+      <h2>局域网对外共享</h2>
+      <p>在小程序详情页开启“局域网共享”后，把宿主显示的共享基址分别拼接：</p>
+      <code class="endpoint-value">&lt;共享基址&gt;/config/1?healthy=1</code>
+      <code class="endpoint-value">&lt;共享基址&gt;/config/index.js.md5</code>
+      <p class="hint warning">共享令牌就是访问凭证，请勿在公共网络泄露。当前包默认关闭 drpy 自身 Basic Auth，以便 miniapp:// 地址直接使用。</p>
+    </section>
+    <section>
+      <h2>其他接口</h2>
+      <p class="hint">健康检查：<code>miniapp://com.leospring.drpy_node/health</code><br />单源 API：<code>miniapp://com.leospring.drpy_node/api/&lt;源名称&gt;</code></p>
+    </section>
+    <script src="./app.js"></script>
+  </main>
+</body>
+</html>

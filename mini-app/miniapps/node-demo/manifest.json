@@ -1,0 +1,14 @@
+{
+  "appId": "com.leospring.node_demo",
+  "name": "Node 服务示例",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "renderer": "webview",
+  "entry": "index.html",
+  "permissions": ["node"],
+  "description": "演示小程序携带 Node.js 后端：宿主按需拉起 worker，miniapp://com.leospring.node_demo 即服务地址",
+  "node": {
+    "entry": "server/index.js",
+    "config": "server/index.config.js"
+  }
+}
