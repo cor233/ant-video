@@ -100,11 +100,17 @@ jobs:
               echo "$ASSET_URLS" | while IFS= read -r url; do
                 if [ -n "$url" ]; then
                   echo "  ⬇️ 下载: $url"
-                  if curl -f -s -L -O "$url"; then
-                    echo "    下载成功"
+                  if curl -fL -sS -4 \
+                       -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" \
+                       --retry 5 --retry-all-errors --retry-delay 5 \
+                       --connect-timeout 30 \
+                       -w "    HTTP %{http_code}, 大小 %{size_download} 字节\n" \
+                       -O "$url"; then
+                    echo "    ✅ 下载成功"
                   else
-                    echo "    下载失败"
+                    echo "    ❌ 下载失败 (退出码 $?)"
                   fi
+                  sleep 1
                 fi
               done
               for file in *; do
