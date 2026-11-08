@@ -76,8 +76,21 @@ jobs:
           WORK_DIR=$(mktemp -d)
           trap 'rm -rf "$WORK_DIR"' EXIT
 
+          safe_asset_name() {
+            local n="$1"
+            [ -z "$n" ] && return 1
+            case "$n" in
+              */*|*\\*|*$'\n'*|*$'\r'*|*$'\t'*|.|..) return 1 ;;
+            esac
+            return 0
+          }
+
           download_asset() {
             local url="$1" name="$2" outdir="$3"
+            if ! safe_asset_name "$name"; then
+              echo "    ⚠️ 跳过非法资产名: $(printf '%q' "$name")"
+              return 1
+            fi
             echo "    ⬇️ 下载: $name"
             if curl -fL -sS -4 \
                  -A "$UA" \
@@ -115,13 +128,14 @@ jobs:
             BODY=$(echo "$release" | jq -r '.body // ""')
             IS_PRERELEASE=$(echo "$release" | jq -r '.prerelease')
             IS_DRAFT=$(echo "$release" | jq -r '.draft')
+            TAG_ENC=$(jq -rn --arg v "$TAG_NAME" '$v|@uri')
 
             echo "=============================="
             echo "处理 Release: $TAG_NAME"
 
             HTTP_STATUS=$(curl -sS -4 -o /dev/null -w "%{http_code}" \
               -H "Authorization: token $GH_TOKEN" \
-              "https://api.github.com/repos/$TARGET_REPO/releases/tags/$TAG_NAME") || {
+              "https://api.github.com/repos/$TARGET_REPO/releases/tags/$TAG_ENC") || {
               echo "  查询目标 Release 失败（curl 错误），跳过本次。"
               continue
             }
@@ -130,7 +144,7 @@ jobs:
               echo "目标仓库已存在，对比标题、内容、预发行、draft 状态与资产。"
               TARGET_RELEASE=$(curl -sS -4 --retry 3 --retry-delay 3 \
                 -H "Authorization: token $GH_TOKEN" \
-                "https://api.github.com/repos/$TARGET_REPO/releases/tags/$TAG_NAME") || {
+                "https://api.github.com/repos/$TARGET_REPO/releases/tags/$TAG_ENC") || {
                 echo "  获取目标 Release 详情失败，跳过本次。"
                 continue
               }
@@ -184,16 +198,18 @@ jobs:
                 rm -f "$WORK_DIR/body.txt"
               fi
 
-              SOURCE_ASSETS=$(echo "$release" | jq -r '.assets[]? | select(.state=="uploaded") | "\(.name)\t\(.size)"' | LC_ALL=C sort)
-              TARGET_ASSETS=$(echo "$TARGET_RELEASE" | jq -r '.assets[]? | select(.state=="uploaded") | "\(.name)\t\(.size)"' | LC_ALL=C sort)
-              CHANGED_ASSETS=$(LC_ALL=C comm -23 <(printf '%s' "$SOURCE_ASSETS") <(printf '%s' "$TARGET_ASSETS") || true)
+              echo "$release" | jq -S -c '.assets[]? | select(.state=="uploaded") | {name,size}' | LC_ALL=C sort > "$WORK_DIR/src_assets"
+              echo "$TARGET_RELEASE" | jq -S -c '.assets[]? | select(.state=="uploaded") | {name,size}' | LC_ALL=C sort > "$WORK_DIR/tgt_assets"
+              LC_ALL=C comm -23 "$WORK_DIR/src_assets" "$WORK_DIR/tgt_assets" > "$WORK_DIR/changed_assets" || true
 
-              if [ -n "$CHANGED_ASSETS" ]; then
+              if [ -s "$WORK_DIR/changed_assets" ]; then
                 echo "  待补传/更新的资产："
-                echo "$CHANGED_ASSETS" | sed 's/^/    - /'
+                jq -r '.name' "$WORK_DIR/changed_assets" | sed 's/^/    - /'
                 DL_DIR=$(mktemp -d -p "$WORK_DIR")
                 UPLOAD_FILES=()
-                while IFS=$'\t' read -r asset_name asset_size; do
+                while IFS= read -r asset_json; do
+                  [ -z "$asset_json" ] && continue
+                  asset_name=$(echo "$asset_json" | jq -r '.name')
                   ASSET_URL=$(echo "$release" | jq -r --arg n "$asset_name" '[.assets[] | select(.name==$n) | .browser_download_url][0] // empty')
                   if [ -z "$ASSET_URL" ]; then
                     echo "    ⚠️ 找不到资产 URL: $asset_name"
@@ -203,7 +219,7 @@ jobs:
                     UPLOAD_FILES+=("$DL_DIR/$asset_name")
                   fi
                   sleep 1
-                done <<< "$CHANGED_ASSETS"
+                done < "$WORK_DIR/changed_assets"
 
                 if [ ${#UPLOAD_FILES[@]} -gt 0 ]; then
                   for f in "${UPLOAD_FILES[@]}"; do
@@ -246,12 +262,16 @@ jobs:
 
             DL_DIR=$(mktemp -d -p "$WORK_DIR")
             UPLOAD_FILES=()
-            while IFS=$'\t' read -r asset_name asset_url; do
+            echo "$release" | jq -c '.assets[]? | select(.state=="uploaded")' > "$WORK_DIR/assets.jsonl"
+            while IFS= read -r asset_json; do
+              [ -z "$asset_json" ] && continue
+              asset_name=$(echo "$asset_json" | jq -r '.name')
+              asset_url=$(echo "$asset_json" | jq -r '.browser_download_url')
               if download_asset "$asset_url" "$asset_name" "$DL_DIR"; then
                 UPLOAD_FILES+=("$DL_DIR/$asset_name")
               fi
               sleep 1
-            done < <(echo "$release" | jq -r '.assets[]? | select(.state=="uploaded") | "\(.name)\t\(.browser_download_url)"')
+            done < "$WORK_DIR/assets.jsonl"
 
             if [ ${#UPLOAD_FILES[@]} -gt 0 ]; then
               for f in "${UPLOAD_FILES[@]}"; do
